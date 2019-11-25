@@ -9,4 +9,4 @@ if [ "$RSCRIPT" = "" ]; then
 fi
 
 #Lancement du script
-Rscript Script.R
+Rscript Script.R $1 $2
