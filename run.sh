@@ -15,4 +15,4 @@ fi
 
 #Lancement du script
 echo -e "\e[32mLancement du script!\e[0m\n\n"
-Rscript Script.R $1 $2
+Rscript Scripts/check_VSoil.R $1 $2
