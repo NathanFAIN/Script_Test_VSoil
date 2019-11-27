@@ -77,6 +77,63 @@ check_contents_file <- function(path_file, value_name, contents)
     }
 }
 
+#Fonction pour comparer le contenu de deux fichiers:
+compare_files <- function(path_file1, path_file2, epsilon, sep)
+{
+    data1 <- read.delim(path_file1, header = TRUE, sep = sep)
+    data2 <- read.delim(path_file2, header = TRUE, sep = sep)
+    colones_data1 <- length(data1)
+    colones_data2 <- length(data2)
+    #Vérification du meme nombre de colonnes dans les deux fichiers:
+    if (all(is.na(unlist(data1[colones_data1])))) {
+        colones_data1 = colones_data1 - 1
+    }
+    if (all(is.na(unlist(data2[colones_data2])))) {
+        colones_data2 = colones_data2 - 1
+    }
+    if (colones_data1 != colones_data2) {
+        if (stop_script == TRUE) {
+            stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de colonnes", ".\n Ils ont respectivement ", colones_data1, " et ", colones_data2, " colonnes\n"), call. = FALSE)
+        } else {
+            cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de colonnes", ".\n Ils ont respectivement ", colones_data1, " et ", colones_data2, " colonnes\n"))
+        }
+    } else {
+        cat(green(path_file1, " et ", path_file2, " ont le même nombre de colonnes: ", colones_data1, " colones\n"))
+    }
+    #Vérification du meme nombre de lignes dans les deux fichiers:
+    data_error <- FALSE
+    for (i in 1:colones_data1) {
+        if(colones_data2 > i && length(unlist(data1[i])) != length(unlist(data2[i]))) {
+            data_error <- TRUE
+            if (stop_script == TRUE) {
+                stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lignes (colonne ", i, ").\n Ils ont respectivement ", length(unlist(data1[i])), " et ", length(unlist(data2[i])), " lignes\n"), call. = FALSE)
+            } else {
+                cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lignes (colonne ", i, ").\n Ils ont respectivement ", length(unlist(data1[i])), " et ", length(unlist(data2[i])), " lignes\n"))
+            }
+        }
+    }
+    if (data_error == FALSE) {
+        cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines.\n"))
+    }
+    #Vérification des valeurs dans les deux fichiers:
+    data_error <- FALSE
+    for (i in 1:colones_data1) {
+        for (j in 1:length(unlist(data1[i]))) {
+            if (colones_data2 > i && length(unlist(data2[i])) > j && abs(unlist(data1[i])[j] - unlist(data2[i])[j]) > epsilon) {
+                data_error <- TRUE
+                if (stop_script == TRUE) {
+                    stop(red("Les valeurs vennant du .ter diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"), call. = FALSE)
+                } else {
+                    cat(red("Les valeurs vennant du .ter diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"))
+                }
+            }
+        }
+    }
+    if (data_error == FALSE) {
+        cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
+    }
+}
+
 ########################################################################################################
 ################################# VERIFICATION DES DEUX REPERTOIRES ####################################
 ########################################################################################################
@@ -102,13 +159,13 @@ node_mass_settings = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/
 if (length(node_ter) == 1 && length(node_calibration) == 1 && length(node_mass_settings) == 1) {
     path_ter_vsoil <- xmlAttrs(node_ter[[1]])[["originalValue"]]
     path_calibration_vsoil <- xmlAttrs(node_calibration[[1]])[["originalValue"]]
-    path_mass_settings_vsoil <- xmlAttrs(node_mass_settings[[1]])[["originalValue"]]
+    path_mass_vsoil <- xmlAttrs(node_mass_settings[[1]])[["originalValue"]]
 } else {
     stop(red("Format invalide du .xml: ", path_file_vsoil, "\n"))
 }
 check_file(path_ter_vsoil)
 check_file(path_calibration_vsoil)
-check_file(path_mass_settings_vsoil)
+check_file(path_mass_vsoil)
 #1.1.2.VSoil Sorties:
 cat(underline$italic("1.1.2.VSoil Sorties:\n"))
 check_file(path_return_status_vsoil)
@@ -143,12 +200,15 @@ check_contents_file(path_return_status_espas, "Return status", "0")
 cat(bold$underline("2.Verification des donnees d'entrees:\n"))
 #2.1.Validation du .ter:
 cat(underline$italic("2.1.Validation du .ter:\n"))
+compare_files(path_ter_vsoil, path_ter_espas, 1, "\t")
 
 #2.2.Validation des donnees de calibration:
 cat(underline$italic("2.2.Validation des donnees de calibration:\n"))
+compare_files(path_mass_vsoil, path_mass_espas, 0.0001, "\t")
 
 #2.3.Masse et diametre:
 cat(underline$italic("2.3.Masse et diametre:\n"))
+compare_files(path_calibration_vsoil, path_calibration_espas, 0.0001, "\t")
 
 ########################################################################################################
 ################################ VERIFICATION DES DONNEES DE SORTIE ####################################

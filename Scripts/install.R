@@ -1,3 +1,6 @@
 install.packages("devtools")
+install.packages("XML")
+install.packages("tools")
+install.packages("diffobj")
 library(devtools)
 devtools::install_github("r-lib/crayon")
