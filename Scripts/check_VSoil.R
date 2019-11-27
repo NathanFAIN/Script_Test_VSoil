@@ -7,9 +7,10 @@ library(crayon)
 ########################################### INITIALISATION #############################################
 ########################################################################################################
 
-#stoper le script quand une erreur est detecte
+#Stoper le script quand une erreur est detecte:
 stop_script <- FALSE
 
+#Recuperer les aguments:
 args <- commandArgs(trailingOnly = TRUE)
 
 #Path pour VSoil:
@@ -33,6 +34,7 @@ path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep 
 ########################################## FONCTIONS UTILES ############################################
 ########################################################################################################
 
+#Fonction pour verifier l'existance d'un fichier:
 check_file <- function(path_file)
 {
     if(!file.exists(path_file) || dir.exists(path_file)) {
@@ -46,6 +48,7 @@ check_file <- function(path_file)
     }
 }
 
+#Fonction pour verifier l'existance d'un dossier:
 check_dir <- function(path_dir)
 {
     if(!dir.exists(path_dir)) {
@@ -59,17 +62,18 @@ check_dir <- function(path_dir)
     }
 }
 
-check_contents_file <- function(path_file, name, contents)
+#Fonction pour verifier le contenu d'un fichier:
+check_contents_file <- function(path_file, value_name, contents)
 {
     contents_test <- readChar(path_file, c(nchar(toString(contents))))
     if (contents_test[1] != contents) {
         if (stop_script == TRUE) {
-            stop(red(name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"), call. = FALSE)
+            stop(red(value_name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"), call. = FALSE)
         } else {
-            cat(red(name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"))
+            cat(red(value_name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"))
         }
     } else {
-        cat(green(name, " valide: ", path_file, " -> ", contents_test[1], "\n"))
+        cat(green(value_name, " valide: ", path_file, " -> ", contents_test[1], "\n"))
     }
 }
 
