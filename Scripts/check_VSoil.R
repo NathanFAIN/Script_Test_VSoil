@@ -1,6 +1,5 @@
 library(XML)
 library(usethis)
-library(devtools)
 library(crayon)
 
 ########################################################################################################
@@ -140,7 +139,11 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
 #Verification du nombre d'aguments:
 cat(bold$underline("1.Verification des deux repertoires:\n"))
 if (path_dir_vsoil == "NA" || path_dir_espas == "NA" || toString(args[3]) != "NA") {
-    stop(red("Nombre d'aguments invalide!\n"))
+    if (stop_script == TRUE) {
+        stop(red("Nombre d'aguments invalide!\n"), call. = FALSE)
+    } else {
+        cat(red("Nombre d'aguments invalide!\n"))
+    }
 } else {
     cat(blue$italic("Repertoire de VSoil: ", path_dir_vsoil, "\n"))
     cat(blue$italic("Repertoire d'ESPAS: ", path_dir_espas, "\n"))
@@ -154,7 +157,7 @@ check_file(path_file_vsoil)
 doc = xmlParse(path_file_vsoil)
 node_ter = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_ter']")
 node_calibration = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_calibartion']")
-node_mass_settings = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_masse_settings']")
+node_mass_settings = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_mass_settings']")
 
 if (length(node_ter) == 1 && length(node_calibration) == 1 && length(node_mass_settings) == 1) {
     path_ter_vsoil <- xmlAttrs(node_ter[[1]])[["originalValue"]]
@@ -216,6 +219,8 @@ compare_files(path_calibration_vsoil, path_calibration_espas, 0.0001, "\t")
 cat(bold$underline("3.Verification des donnees de sorties:\n"))
 #3.1.Potentiels matriciels:
 cat(underline$italic("3.1.Potentiels matriciels:\n"))
+compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.0001, "\t")
 
 #3.2.Observ_value:
 cat(underline$italic("3.2.Observ_value:\n"))
+compare_files(path_observ_value_vsoil, path_observ_value_espas, 0.0001, "\t")
