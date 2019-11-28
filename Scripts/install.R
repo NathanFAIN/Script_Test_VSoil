@@ -1,5 +1,6 @@
 install.packages("devtools")
 install.packages("XML")
+install.packages("diffr")
 #install.packages("tools")
 #install.packages("diffobj")
 library(devtools)

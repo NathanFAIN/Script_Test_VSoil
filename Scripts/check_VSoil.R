@@ -1,6 +1,7 @@
 library(XML)
 library(usethis)
 library(crayon)
+library(diffobj)
 
 ########################################################################################################
 ########################################### INITIALISATION #############################################
@@ -121,15 +122,61 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
             if (colones_data2 > i && length(unlist(data2[i])) > j && abs(unlist(data1[i])[j] - unlist(data2[i])[j]) > epsilon) {
                 data_error <- TRUE
                 if (stop_script == TRUE) {
-                    stop(red("Les valeurs vennant du .ter diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"), call. = FALSE)
+                    diffFile(path_file1, path_file2)
+                    stop(red("Les valeurs diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"), call. = FALSE)
                 } else {
-                    cat(red("Les valeurs vennant du .ter diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"))
+                    cat(red("Les valeurs diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"))
                 }
             }
         }
     }
     if (data_error == FALSE) {
         cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
+    } else {
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+    }
+}
+
+compare_files_lines <- function(path_file1, path_file2, epsilon)
+{
+    data1 <- readLines(path_file1)
+    data2 <- readLines(path_file2)
+    lines_data1 <- length(data1)
+    lines_data2 <- length(data2)
+
+    #Vérification du meme nombre de lines dans les deux fichiers:
+    if (all(is.na(unlist(data1[lines_data1])))) {
+        lines_data1 = lines_data1 - 1
+    }
+    if (all(is.na(unlist(data2[lines_data2])))) {
+        lines_data2 = lines_data2 - 1
+    }
+    if (lines_data1 != lines_data2) {
+        if (stop_script == TRUE) {
+            stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"), call. = FALSE)
+        } else {
+            cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"))
+        }
+    } else {
+        cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines: ", lines_data1, " colones\n"))
+    }
+    #Vérification des valeurs dans les deux fichiers:
+    data_error <- FALSE
+    for (i in 1:lines_data1) {
+        if (lines_data2 > i && !is.na(as.numeric(data1[i])) && !is.na(as.numeric(data2[i])) && abs(as.numeric(data1[i]) - as.numeric(data2[i])) > epsilon) {
+            data_error <- TRUE
+            if (stop_script == TRUE) {
+                diffFile(path_file1, path_file2)
+                stop(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"), call. = FALSE)
+            } else {
+                cat(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"))
+            }
+        }
+    }
+    if (data_error == FALSE) {
+        cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
+    } else {
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
     }
 }
 
@@ -203,15 +250,17 @@ check_contents_file(path_return_status_espas, "Return status", "0")
 cat(bold$underline("2.Verification des donnees d'entrees:\n"))
 #2.1.Validation du .ter:
 cat(underline$italic("2.1.Validation du .ter:\n"))
-compare_files(path_ter_vsoil, path_ter_espas, 1, "\t")
+compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
 
 #2.2.Validation des donnees de calibration:
 cat(underline$italic("2.2.Validation des donnees de calibration:\n"))
-compare_files(path_mass_vsoil, path_mass_espas, 0.0001, "\t")
+compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")
 
 #2.3.Masse et diametre:
 cat(underline$italic("2.3.Masse et diametre:\n"))
-compare_files(path_calibration_vsoil, path_calibration_espas, 0.0001, "\t")
+#compare_files(path_mass_vsoil, path_mass_espas, 0.0001, "\t")
+#diffFile(path_mass_vsoil, path_mass_espas, tab.stops=1, disp.width=200)
+compare_files_lines(path_mass_vsoil, path_mass_espas, 0.001)
 
 ########################################################################################################
 ################################ VERIFICATION DES DONNEES DE SORTIE ####################################
@@ -219,8 +268,8 @@ compare_files(path_calibration_vsoil, path_calibration_espas, 0.0001, "\t")
 cat(bold$underline("3.Verification des donnees de sorties:\n"))
 #3.1.Potentiels matriciels:
 cat(underline$italic("3.1.Potentiels matriciels:\n"))
-compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.0001, "\t")
+compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")
 
 #3.2.Observ_value:
 cat(underline$italic("3.2.Observ_value:\n"))
-compare_files(path_observ_value_vsoil, path_observ_value_espas, 0.0001, "\t")
+compare_files(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
