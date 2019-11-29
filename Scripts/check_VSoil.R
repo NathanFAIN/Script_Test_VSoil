@@ -82,9 +82,6 @@ compare_data <- function(data1, data2, epsilon, path_file1, path_file2)
 {
     cmp_data <- ifelse(abs(unlist(data1) - unlist(data2)) > epsilon, TRUE, FALSE)
     if (is.element(TRUE, cmp_data)) {
-        cat(unlist(data1), "\n")
-        cat(unlist(data2), "\n")
-        cat(unlist(cmp_data), "\n")
         index <- which.max(cmp_data)
         line <- (index + 1) %% (length(unlist(data1[1])) + 1)
         colone <- ceiling(index / length(unlist(data1[1])))
@@ -104,6 +101,14 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
     cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont des valeurs identiques.\n"))
 }
 
+check_epsilon <- function(value1, value2, epsilon, path_file1, path_file2)
+{
+    if (is.na(as.numeric(value1)) || is.na(as.numeric(value2)) || abs(as.numeric(value1) - as.numeric(value2)) > epsilon) {
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+        stop(red("Valeur: ", value1, " différente de: ", value2, "\n"), call. = FALSE)
+    }
+}
+
 compare_files_lines <- function(path_file1, path_file2, epsilon)
 {
     data1 <- readLines(path_file1)
@@ -111,23 +116,21 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
     lines_data1 <- length(data1)
     lines_data2 <- length(data2)
 
-    #Vérification du meme nombre de lines dans les deux fichiers:
-#     if (lines_data1 != lines_data2) {
-#         stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"), call. = FALSE)
-#     } else {
-#         cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines: ", lines_data1, " colones\n"))
-#     }
-    #Vérification des valeurs dans les deux fichiers:
-#     for (i in 1:lines_data1) {
-#         if (!is.na(as.numeric(data1[i])) && !is.na(as.numeric(data2[i])) && abs(as.numeric(data1[i]) - as.numeric(data2[i])) > epsilon) {
-#             diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
-#             stop(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"), call. = FALSE)
-#         }
-#     }
-#     cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
-      cmp_data <- ifelse(abs(data1 - data2) > epsilon, TRUE, FALSE)
-      cat(cmp_data, "\n")
-      
+#   Vérification du meme nombre de lines dans les deux fichiers:
+    if (lines_data1 != lines_data2) {
+        stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"), call. = FALSE)
+    } else {
+        cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines: ", lines_data1, " colones\n"))
+    }
+#   Vérification des valeurs dans les deux fichiers:
+    check_epsilon(data1[11], data2[11], 0.001, path_file1, path_file2)
+    check_epsilon(data1[11], data2[11], 0.001, path_file1, path_file2)
+    check_epsilon(data1[17], data2[17], 0.001, path_file1, path_file2)
+    check_epsilon(data1[20], data2[20], 0.001, path_file1, path_file2)
+    check_epsilon(data1[23], data2[23], 0.001, path_file1, path_file2)
+    check_epsilon(data1[26], data2[26], 0.001, path_file1, path_file2)
+    check_epsilon(data1[29], data2[29], 0.001, path_file1, path_file2)
+    cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
 }
 
 ########################################################################################################
@@ -209,8 +212,6 @@ compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")
 
 #2.3.Masse et diametre:
 cat(underline$italic("2.3.Masse et diametre:\n"))
-#compare_files(path_mass_vsoil, path_mass_espas, 0.0001, "\t")
-#diffFile(path_mass_vsoil, path_mass_espas, tab.stops=1, disp.width=200)
 compare_files_lines(path_mass_vsoil, path_mass_espas, 0.001)
 
 ########################################################################################################
