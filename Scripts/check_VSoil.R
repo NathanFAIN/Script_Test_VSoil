@@ -38,11 +38,7 @@ path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep 
 check_file <- function(path_file)
 {
     if(!file.exists(path_file) || dir.exists(path_file)) {
-        if (stop_script == TRUE) {
-            stop(red("Chemin invalide: ", path_file, "\n"), call. = FALSE)
-        } else {
-            cat(red("Chemin invalide: ", path_file, "\n"))
-        }
+       stop(red("Chemin invalide: ", path_file, "\n"), call. = FALSE)
     } else {
         cat(green("Chemin valide: ", path_file, "\n"))
     }
@@ -52,11 +48,7 @@ check_file <- function(path_file)
 check_dir <- function(path_dir)
 {
     if(!dir.exists(path_dir)) {
-        if (stop_script == TRUE) {
-            stop(red("Chemin invalide: ", path_dir, "\n"), call. = FALSE)
-        } else {
-            cat(red("Chemin invalide: ", path_dir, "\n"))
-        }
+        stop(red("Chemin invalide: ", path_dir, "\n"), call. = FALSE)
     } else {
         cat(green("Chemin valide: ", path_dir, "\n"))
     }
@@ -67,13 +59,37 @@ check_contents_file <- function(path_file, value_name, contents)
 {
     contents_test <- readChar(path_file, c(nchar(toString(contents))))
     if (contents_test[1] != contents) {
-        if (stop_script == TRUE) {
-            stop(red(value_name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"), call. = FALSE)
-        } else {
-            cat(red(value_name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"))
-        }
+        stop(red(value_name, " invalide (obtenu '", contents_test[1], "' mais attendu '", contents,"')\n"), call. = FALSE)
     } else {
         cat(green(value_name, " valide: ", path_file, " -> ", contents_test[1], "\n"))
+    }
+}
+
+#Fonction pour comparer le nombre de lines de deux data:
+compare_line <- function(data1, data2, path_file1, path_file2)
+{
+    if (length(data1) != length(data2)) {
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+        stop(red("Les fichiers ", path_file1, " et ", path_file2, " n'ont pas le même nombre de colones: ",length(data1),  length(data2) , "\n"), call. = FALSE, domain = NULL)
+    } else if (length(unlist(data1)) != length(unlist(data2))) {
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+        stop(red("Les fichiers ", path_file1, " et ", path_file2, " n'ont pas le même nombre de lines: ",length(unlist(data1)),  length(unlist(data2)) , "\n"), call. = FALSE, domain = NULL)
+    }
+}
+
+#Fonction pour comparer le contenu de deux data:
+compare_data <- function(data1, data2, epsilon, path_file1, path_file2)
+{
+    cmp_data <- ifelse(abs(unlist(data1) - unlist(data2)) > epsilon, TRUE, FALSE)
+    if (is.element(TRUE, cmp_data)) {
+        cat(unlist(data1), "\n")
+        cat(unlist(data2), "\n")
+        cat(unlist(cmp_data), "\n")
+        index <- which.max(cmp_data)
+        line <- (index + 1) %% (length(unlist(data1[1])) + 1)
+        colone <- ceiling(index / length(unlist(data1[1])))
+        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+        stop(red("Valeur '", unlist(data1[colone])[line], "' est invalide, LINE: ", line, "COLONE: ",colone , "\n"), call. = FALSE, domain = NULL)
     }
 }
 
@@ -82,59 +98,10 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
 {
     data1 <- read.delim(path_file1, header = TRUE, sep = sep)
     data2 <- read.delim(path_file2, header = TRUE, sep = sep)
-    colones_data1 <- length(data1)
-    colones_data2 <- length(data2)
-    #Vérification du meme nombre de colonnes dans les deux fichiers:
-    if (all(is.na(unlist(data1[colones_data1])))) {
-        colones_data1 = colones_data1 - 1
-    }
-    if (all(is.na(unlist(data2[colones_data2])))) {
-        colones_data2 = colones_data2 - 1
-    }
-    if (colones_data1 != colones_data2) {
-        if (stop_script == TRUE) {
-            stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de colonnes", ".\n Ils ont respectivement ", colones_data1, " et ", colones_data2, " colonnes\n"), call. = FALSE)
-        } else {
-            cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de colonnes", ".\n Ils ont respectivement ", colones_data1, " et ", colones_data2, " colonnes\n"))
-        }
-    } else {
-        cat(green(path_file1, " et ", path_file2, " ont le même nombre de colonnes: ", colones_data1, " colones\n"))
-    }
-    #Vérification du meme nombre de lignes dans les deux fichiers:
-    data_error <- FALSE
-    for (i in 1:colones_data1) {
-        if(colones_data2 > i && length(unlist(data1[i])) != length(unlist(data2[i]))) {
-            data_error <- TRUE
-            if (stop_script == TRUE) {
-                stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lignes (colonne ", i, ").\n Ils ont respectivement ", length(unlist(data1[i])), " et ", length(unlist(data2[i])), " lignes\n"), call. = FALSE)
-            } else {
-                cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lignes (colonne ", i, ").\n Ils ont respectivement ", length(unlist(data1[i])), " et ", length(unlist(data2[i])), " lignes\n"))
-            }
-        }
-    }
-    if (data_error == FALSE) {
-        cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines.\n"))
-    }
-    #Vérification des valeurs dans les deux fichiers:
-    data_error <- FALSE
-    for (i in 1:colones_data1) {
-        for (j in 1:length(unlist(data1[i]))) {
-            if (colones_data2 > i && length(unlist(data2[i])) > j && abs(unlist(data1[i])[j] - unlist(data2[i])[j]) > epsilon) {
-                data_error <- TRUE
-                if (stop_script == TRUE) {
-                    diffFile(path_file1, path_file2)
-                    stop(red("Les valeurs diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"), call. = FALSE)
-                } else {
-                    cat(red("Les valeurs diffèrent à la colonne ", i, " et la line ", j," ( ", unlist(data1[i])[j], " != ", unlist(data2[i])[j], " )\n"))
-                }
-            }
-        }
-    }
-    if (data_error == FALSE) {
-        cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
-    } else {
-        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
-    }
+    compare_line(data1, data2, path_file1, path_file2)
+    cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont le même nombre de lignes.\n"))
+    compare_data(data1, data2, epsilon, path_file1, path_file2)
+    cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont des valeurs identiques.\n"))
 }
 
 compare_files_lines <- function(path_file1, path_file2, epsilon)
@@ -145,39 +112,22 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
     lines_data2 <- length(data2)
 
     #Vérification du meme nombre de lines dans les deux fichiers:
-    if (all(is.na(unlist(data1[lines_data1])))) {
-        lines_data1 = lines_data1 - 1
-    }
-    if (all(is.na(unlist(data2[lines_data2])))) {
-        lines_data2 = lines_data2 - 1
-    }
-    if (lines_data1 != lines_data2) {
-        if (stop_script == TRUE) {
-            stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"), call. = FALSE)
-        } else {
-            cat(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"))
-        }
-    } else {
-        cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines: ", lines_data1, " colones\n"))
-    }
+#     if (lines_data1 != lines_data2) {
+#         stop(red(path_file1, " et ", path_file2, " n'ont pas le même nombre de lines", ".\n Ils ont respectivement ", lines_data1, " et ", lines_data2, " colonnes\n"), call. = FALSE)
+#     } else {
+#         cat(green(path_file1, " et ", path_file2, " ont le même nombre de lines: ", lines_data1, " colones\n"))
+#     }
     #Vérification des valeurs dans les deux fichiers:
-    data_error <- FALSE
-    for (i in 1:lines_data1) {
-        if (lines_data2 > i && !is.na(as.numeric(data1[i])) && !is.na(as.numeric(data2[i])) && abs(as.numeric(data1[i]) - as.numeric(data2[i])) > epsilon) {
-            data_error <- TRUE
-            if (stop_script == TRUE) {
-                diffFile(path_file1, path_file2)
-                stop(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"), call. = FALSE)
-            } else {
-                cat(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"))
-            }
-        }
-    }
-    if (data_error == FALSE) {
-        cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
-    } else {
-        diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
-    }
+#     for (i in 1:lines_data1) {
+#         if (!is.na(as.numeric(data1[i])) && !is.na(as.numeric(data2[i])) && abs(as.numeric(data1[i]) - as.numeric(data2[i])) > epsilon) {
+#             diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
+#             stop(red("Les valeurs diffèrent à la line ", i," ( ", data1[i], " != ", data2[i], " )\n"), call. = FALSE)
+#         }
+#     }
+#     cat(green(path_file1, " et ", path_file2, " ont les mêmes valeus.\n"))
+      cmp_data <- ifelse(abs(data1 - data2) > epsilon, TRUE, FALSE)
+      cat(cmp_data, "\n")
+      
 }
 
 ########################################################################################################
@@ -185,7 +135,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
 ########################################################################################################
 #Verification du nombre d'aguments:
 cat(bold$underline("1.Verification des deux repertoires:\n"))
-if (path_dir_vsoil == "NA" || path_dir_espas == "NA" || toString(args[3]) != "NA") {
+if (is.na(args[1]) || is.na(args[2]) || !is.na(args[3])) {
     if (stop_script == TRUE) {
         stop(red("Nombre d'aguments invalide!\n"), call. = FALSE)
     } else {
@@ -195,6 +145,7 @@ if (path_dir_vsoil == "NA" || path_dir_espas == "NA" || toString(args[3]) != "NA
     cat(blue$italic("Repertoire de VSoil: ", path_dir_vsoil, "\n"))
     cat(blue$italic("Repertoire d'ESPAS: ", path_dir_espas, "\n"))
 }
+
 #1.1.VSoil:
 cat(underline$italic("1.1.VSoil:\n"))
 check_dir(path_dir_vsoil)
@@ -239,7 +190,7 @@ check_file(path_ter_espas)
 #1.2.2.ESPAS Sorties:
 cat(underline$italic("1.2.2.ESPAS Sorties:\n"))
 check_file(path_matrix_potential_espas)
-check_file(path_observ_value_espas)
+# check_file(path_observ_value_espas)
 check_file(path_return_status_espas)
 #Verification du return_status d'ESPAS:
 check_contents_file(path_return_status_espas, "Return status", "0")
@@ -250,7 +201,7 @@ check_contents_file(path_return_status_espas, "Return status", "0")
 cat(bold$underline("2.Verification des donnees d'entrees:\n"))
 #2.1.Validation du .ter:
 cat(underline$italic("2.1.Validation du .ter:\n"))
-compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
+# compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
 
 #2.2.Validation des donnees de calibration:
 cat(underline$italic("2.2.Validation des donnees de calibration:\n"))
