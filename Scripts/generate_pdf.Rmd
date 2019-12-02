@@ -1,0 +1,40 @@
+---
+title: | 
+  | **Validation des valeurs de VSoil**
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+author: "`r Sys.info()[['user']]`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+  #library(gridExtra)
+  #library(tidyverse)
+  #knitr::opts_chunk$set(echo = TRUE)
+  library(knitr)
+  library(rmarkdown)
+  library(markdown)
+
+```
+
+\newpage
+# **Sommaire**
+
+
+**1. Vérification des deux répertoires** \
+\   \ 1.1.VSoil \
+\   \ \   \ 1.1.1.VSoil Entrées \
+\   \ \   \ 1.1.2.VSoil Sorties \
+\   \ 1.2.ESPAS \
+\   \ \   \ 1.2.1.ESPAS Entrées \
+\   \ \   \ 1.2.2.ESPAS Sorties \
+
+
+**2. Vérification des données d'entrées** \
+\   \ 2.1.Validation du .ter \
+\   \ 2.2.Validation des données de calibration \
+\   \ 2.3.Masse et diamètre \
+
+
+**3. Vérification des données de sorties** \
+\   \ 3.1.Potentiels matriciels \
+\   \ 3.2.Valeurs observées \

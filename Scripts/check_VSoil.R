@@ -27,7 +27,7 @@ path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", se
 path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
 path_ter_espas <- paste(path_dir_espas, "/Example/Wind_sdec/Wind_sdec.dat", sep = "")
 path_matrix_potential_espas <- paste(path_dir_espas, "/lib/espas_potential.csv", sep = "")
-path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value.csv", sep = "")
+path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", sep = "")
 path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
 
 ########################################################################################################
@@ -83,7 +83,8 @@ compare_data <- function(data1, data2, epsilon, path_file1, path_file2)
     cmp_data <- ifelse(abs(unlist(data1) - unlist(data2)) > epsilon, TRUE, FALSE)
     if (is.element(TRUE, cmp_data)) {
         index <- which.max(cmp_data)
-        line <- (index + 1) %% (length(unlist(data1[1])) + 1)
+        cat(index, "\n")
+        line <- (index - 1) %% length(unlist(data1[1])) + 1
         colone <- ceiling(index / length(unlist(data1[1])))
         diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
         stop(red("Valeur '", unlist(data1[colone])[line], "' est invalide, LINE: ", line, "COLONE: ",colone , "\n"), call. = FALSE, domain = NULL)
@@ -101,6 +102,20 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
     cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont des valeurs identiques.\n"))
 }
 
+#Fonction pour comparer les valeurs observees:
+compare_files_bis <- function(path_file1, path_file2, epsilon, sep)
+{
+    data1 <- read.delim(path_file1, header = TRUE, sep = sep)
+    data2 <- read.delim(path_file2, header = TRUE, sep = sep)
+    compare_line(data1, data2, path_file1, path_file2)
+    cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont le même nombre de lignes.\n"))
+    compare_data(data1[1], data2[1], 0.2, path_file1, path_file2)
+    compare_data(data1[2], data2[2], epsilon, path_file1, path_file2)
+    cat(green("Les fichiers ", path_file1, " et ", path_file2, " ont des valeurs identiques.\n"))
+}
+
+
+#Fonction pour comparer deux nombres:
 check_epsilon <- function(value1, value2, epsilon, path_file1, path_file2)
 {
     if (is.na(as.numeric(value1)) || is.na(as.numeric(value2)) || abs(as.numeric(value1) - as.numeric(value2)) > epsilon) {
@@ -139,11 +154,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
 #Verification du nombre d'aguments:
 cat(bold$underline("1.Verification des deux repertoires:\n"))
 if (is.na(args[1]) || is.na(args[2]) || !is.na(args[3])) {
-    if (stop_script == TRUE) {
-        stop(red("Nombre d'aguments invalide!\n"), call. = FALSE)
-    } else {
-        cat(red("Nombre d'aguments invalide!\n"))
-    }
+    stop(red("Nombre d'aguments invalide!\n"), call. = FALSE)
 } else {
     cat(blue$italic("Repertoire de VSoil: ", path_dir_vsoil, "\n"))
     cat(blue$italic("Repertoire d'ESPAS: ", path_dir_espas, "\n"))
@@ -193,7 +204,7 @@ check_file(path_ter_espas)
 #1.2.2.ESPAS Sorties:
 cat(underline$italic("1.2.2.ESPAS Sorties:\n"))
 check_file(path_matrix_potential_espas)
-# check_file(path_observ_value_espas)
+check_file(path_observ_value_espas)
 check_file(path_return_status_espas)
 #Verification du return_status d'ESPAS:
 check_contents_file(path_return_status_espas, "Return status", "0")
@@ -224,4 +235,4 @@ compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, "
 
 #3.2.Observ_value:
 cat(underline$italic("3.2.Observ_value:\n"))
-compare_files(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
+compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
