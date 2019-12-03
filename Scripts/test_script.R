@@ -148,3 +148,45 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
         diffFile(path_file1, path_file2, tab.stops=1, disp.width=200)
     }
 }
+
+
+
+
+\newpage
+
+
+\textcolor{lightgray}{This is lightgray.}
+
+\textcolor{gray}{This is gray.}
+
+\textcolor{darkgray}{This is darkgray.}
+
+\textcolor{lime}{This is lime.}
+
+\textcolor{green}{This is green.}
+
+\textcolor{olive}{This is olive.}
+
+\textcolor{teal}{This is teal.}
+
+\textcolor{blue}{This is blue.}
+
+\textcolor{cyan}{This is cyan.}
+
+\textcolor{brown}{This is brown.}
+
+\textcolor{magenta}{This is magenta.}
+
+\textcolor{red}{This is red.}
+
+\textcolor{violet}{This is violet.}
+
+\textcolor{orange}{This is orange.}
+
+\textcolor{purple}{This is purple.}
+
+\textcolor{pink}{This is pink.}
+
+\textcolor{yellow}{This is yellow.}
+
+\textcolor{white}{This is white.} The proceeding text is white. .

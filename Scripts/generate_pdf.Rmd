@@ -3,38 +3,331 @@ title: |
   | **Validation des valeurs de VSoil**
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 author: "`r Sys.info()[['user']]`"
-output: pdf_document
+output:
+    pdf_document: 
+       latex_engine: xelatex
+mainfont: Arial
+monofont: Arial
+fontsize: 12 pt
+header-includes: \usepackage{xcolor}
 ---
 
 ```{r setup, include=FALSE}
-  #library(gridExtra)
-  #library(tidyverse)
-  #knitr::opts_chunk$set(echo = TRUE)
+########################################################################################################
+############################################## LIBRARY #################################################
+########################################################################################################
+  library(gridExtra)
+  library(tidyverse)
   library(knitr)
   library(rmarkdown)
   library(markdown)
+  library(XML)
+  library(usethis)
+  library(crayon)
+  library(diffobj)
+  knitr::opts_chunk$set(echo = TRUE)
+```
 
+
+```{r, echo=FALSE}
+########################################################################################################
+########################################### INITIALISATION #############################################
+########################################################################################################
+
+script_error <<- FALSE
+
+#Recuperer les aguments:
+args <- commandArgs(trailingOnly = TRUE)
+
+#Path pour VSoil:
+path_dir_vsoil <- toString(args[1])
+path_file_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_model_init_data.xml", sep = "")
+path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_status.txt", sep = "")
+path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
+path_matrix_potential_vsoil <- paste(path_dir_vsoil, "/matrix_potential.csv", sep = "")
+path_observ_value_vsoil <- paste(path_dir_vsoil, "/observ_value.csv", sep = "")
+
+#Path pour ESPAS:
+path_dir_espas <- toString(args[2])
+path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", sep = "")
+path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
+path_ter_espas <- paste(path_dir_espas, "/Example/Wind_sdec/Wind_sdec.dat", sep = "")
+path_matrix_potential_espas <- paste(path_dir_espas, "/lib/espas_potential.csv", sep = "")
+path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", sep = "")
+path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
+```
+
+```{r, echo=FALSE}
+########################################################################################################
+########################################## FONCTIONS UTILES ############################################
+########################################################################################################
+
+#Fonction pour verifier le nombre d'args:
+check_args_number <- function(args)
+{
+    if (is.na(args[1]) || is.na(args[2]) || !is.na(args[3])) {
+        script_error <<- TRUE
+        cat("\\textcolor{red}{Nombre d'aguments invalide!} \\\n")
+    } else {
+        cat("\\textcolor{cyan}{Repertoire de VSoil: }", path_dir_vsoil, " \\\n", sep="")
+        cat("\\textcolor{cyan}{Repertoire d'ESPAS: }", path_dir_espas, " \\\n", sep="")
+    }
+}
+
+#Fonction pour verifier l'existance d'un fichier:
+check_file <- function(path_file)
+{
+    if (script_error == FALSE) {
+        if(!file.exists(path_file) || dir.exists(path_file)) {
+            script_error <<- TRUE
+            cat('\\textcolor{red}{Chemin invalide: }')
+        } else {
+            cat('\\textcolor{green}{Chemin valide: }')
+        }
+        cat(path_file, " \\\n", sep="")
+    }
+}
+
+#Fonction pour verifier l'existance d'un dossier:
+check_dir <- function(path_dir)
+{
+    if (script_error == FALSE) {
+        if(!dir.exists(path_dir)) {
+            script_error <<- TRUE
+            cat('\\textcolor{red}{Chemin invalide: }')
+        } else {
+            cat('\\textcolor{green}{Chemin valide: }')
+        }
+        cat(path_dir, " \\\n", sep="")
+    }
+}
+
+#Fonction pour obtenir les path grace a l'xml:
+get_path_from_xml <- function(path)
+{
+    if (script_error == FALSE) {
+        doc = xmlParse(path)
+        node_ter = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_ter']")
+        node_calibration = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_calibartion']")
+        node_mass_settings = getNodeSet(doc ,"//module[@name='espace_ret']/layer[@id=1]/parameter[@name='path_wind_mass_settings']")
+
+        if (length(node_ter) == 1 && length(node_calibration) == 1 && length(node_mass_settings) == 1) {
+            path_ter_vsoil <<- xmlAttrs(node_ter[[1]])[["originalValue"]]
+            path_calibration_vsoil <<- xmlAttrs(node_calibration[[1]])[["originalValue"]]
+            path_mass_vsoil <<- xmlAttrs(node_mass_settings[[1]])[["originalValue"]]
+        } else {
+            script_error <<- TRUE
+            path_ter_vsoil <<- ""
+            path_calibration_vsoil <<- ""
+            path_mass_vsoil <<- ""
+            cat('\\textcolor{red}{Chemin invalide: }', path, " \\\n", sep="")
+        }
+    }
+}
+
+#Fonction pour verifier le contenu d'un fichier:
+check_contents_file <- function(path_file, value_name, contents)
+{
+    if (script_error == FALSE) {
+        contents_test <- readChar(path_file, c(nchar(toString(contents))))
+        if (contents_test[1] != contents) {
+            cat('\\textcolor{red}{', value_name, ' invalide: }', "Obtenu '", contents_test[1], "' mais attendu '", contents,"' \\\n", sep="")
+        } else {
+            cat('\\textcolor{green}{', value_name, ' valide: }', path_file, " -> ", contents_test[1], " \\\n", sep="")
+        }
+    }
+}
+
+#Fonction pour comparer le nombre de lines de deux data:
+compare_line <- function(data1, data2, path_file1, path_file2)
+{
+    if (length(data1) != length(data2)) {
+        cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de colones: } \\\n", path_file1, "->", length(data1), " \\\n", path_file2, "->", length(data2)," \\\n", sep="")
+    } else if (length(unlist(data1)) != length(unlist(data2))) {
+        cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de lines: } \\\n", path_file1, "->", length(unlist(data1)), " \\\n", path_file2, "->", length(unlist(data2))," \\\n", sep="")
+    }
+}
+
+#Fonction pour comparer le contenu de deux data:
+compare_data <- function(data1, data2, epsilon, path_file1, path_file2)
+{
+    cmp_data <- ifelse(abs(unlist(data1) - unlist(data2)) > epsilon, TRUE, FALSE)
+    if (is.element(TRUE, cmp_data)) {
+        index <- which.max(cmp_data)
+        cat(index, "\n")
+        line <- (index - 1) %% length(unlist(data1[1])) + 1
+        colone <- ceiling(index / length(unlist(data1[1])))
+        stop(red("Valeur '", unlist(data1[colone])[line], "' est invalide, LINE: ", line, "COLONE: ",colone , "\n"), call. = FALSE, domain = NULL)
+    }
+}
+
+#Fonction pour comparer le contenu de deux fichiers:
+compare_files <- function(path_file1, path_file2, epsilon, sep)
+{
+    data1 <- read.delim(path_file1, header = TRUE, sep = sep)
+    data2 <- read.delim(path_file2, header = TRUE, sep = sep)
+    compare_line(data1, data2, path_file1, path_file2)
+    cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+    compare_data(data1, data2, epsilon, path_file1, path_file2)
+    cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+}
+
+#Fonction pour comparer les valeurs observees:
+compare_files_bis <- function(path_file1, path_file2, epsilon, sep)
+{
+    data1 <- read.delim(path_file1, header = TRUE, sep = sep)
+    data2 <- read.delim(path_file2, header = TRUE, sep = sep)
+    compare_line(data1, data2, path_file1, path_file2)
+    cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+    compare_data(data1[1], data2[1], 0.2, path_file1, path_file2)
+    compare_data(data1[2], data2[2], epsilon, path_file1, path_file2)
+    cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+}
+
+
+#Fonction pour comparer deux nombres:
+check_epsilon <- function(value1, value2, epsilon, path_file1, path_file2)
+{
+    if (is.na(as.numeric(value1)) || is.na(as.numeric(value2)) || abs(as.numeric(value1) - as.numeric(value2)) > epsilon) {
+        stop(red("Valeur: ", value1, " différente de: ", value2, "\n"), call. = FALSE)
+    }
+}
+
+compare_files_lines <- function(path_file1, path_file2, epsilon)
+{
+    data1 <- readLines(path_file1)
+    data2 <- readLines(path_file2)
+    lines_data1 <- length(data1)
+    lines_data2 <- length(data2)
+
+#   Vérification du meme nombre de lines dans les deux fichiers:
+    if (lines_data1 != lines_data2) {
+        cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de lines: } \\\n", path_file1, "->", lines_data1, " \\\n", path_file2, "->", lines_data2," \\\n", sep="")
+    } else {
+        cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lines: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+    }
+#   Vérification des valeurs dans les deux fichiers:
+    check_epsilon(data1[11], data2[11], 0.001, path_file1, path_file2)
+    check_epsilon(data1[11], data2[11], 0.001, path_file1, path_file2)
+    check_epsilon(data1[17], data2[17], 0.001, path_file1, path_file2)
+    check_epsilon(data1[20], data2[20], 0.001, path_file1, path_file2)
+    check_epsilon(data1[23], data2[23], 0.001, path_file1, path_file2)
+    check_epsilon(data1[26], data2[26], 0.001, path_file1, path_file2)
+    check_epsilon(data1[29], data2[29], 0.001, path_file1, path_file2)
+    cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+}
 ```
 
 \newpage
+
 # **Sommaire**
 
-
-**1. Vérification des deux répertoires** \
-\   \ 1.1.VSoil \
-\   \ \   \ 1.1.1.VSoil Entrées \
-\   \ \   \ 1.1.2.VSoil Sorties \
-\   \ 1.2.ESPAS \
-\   \ \   \ 1.2.1.ESPAS Entrées \
-\   \ \   \ 1.2.2.ESPAS Sorties \
-
-
-**2. Vérification des données d'entrées** \
-\   \ 2.1.Validation du .ter \
-\   \ 2.2.Validation des données de calibration \
-\   \ 2.3.Masse et diamètre \
+**\hyperlink{target1}{{1. Vérification des deux répertoires}}** \
+\   \ \hyperlink{target1.1}{{1.1.VSoil}} \
+\   \ \   \ \hyperlink{target1.1.1}{{1.1.1.VSoil Entrées}} \
+\   \ \   \ \hyperlink{target1.1.2}{{1.1.2.VSoil Sorties}} \
+\   \ \hyperlink{target1.2}{{1.2.ESPAS}} \
+\   \ \   \ \hyperlink{target1.2.1}{{1.2.1.ESPAS Entrées}} \
+\   \ \   \ \hyperlink{target1.2.2}{{1.2.2.ESPAS Sorties}} \
 
 
-**3. Vérification des données de sorties** \
-\   \ 3.1.Potentiels matriciels \
-\   \ 3.2.Valeurs observées \
+**2.\hyperlink{target2}{{Vérification des données d'entrées}}** \
+\   \ \hyperlink{target2.1}{{2.1.Validation du .ter}} \
+\   \ \hyperlink{target2.2}{{2.2.Validation des données de calibration}} \
+\   \ \hyperlink{target2.3}{{2.3.Masse et diamètre}} \
+
+
+**3. \hyperlink{target3}{{Vérification des données de sorties}}** \
+\   \ \hyperlink{target3.1}{{3.1.Potentiels matriciels}} \
+\   \ \hyperlink{target3.2}{{3.2.Valeurs observées}} \
+
+
+
+
+\newpage
+**\hypertarget{target1}{{1. Vérification des deux répertoires}}** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+check_args_number(args)
+```
+***\hypertarget{target1.1}{{1.1.VSoil}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+check_dir(path_dir_vsoil)
+```
+***\hypertarget{target1.1.1}{{1.1.1.VSoil Entrées:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    check_file(path_file_vsoil)
+    get_path_from_xml(path_file_vsoil)
+    check_file(path_ter_vsoil)
+    check_file(path_calibration_vsoil)
+    check_file(path_mass_vsoil)
+```
+
+***\hypertarget{target1.1.2}{{1.1.2.VSoil Sorties:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    check_file(path_return_status_vsoil)
+    check_file(path_progression_vsoil)
+    check_file(path_matrix_potential_vsoil)
+    check_file(path_observ_value_vsoil)
+    #Verification du return_status de VSoil:
+    check_contents_file(path_return_status_vsoil, "Return status", "0")
+    #Verification de la progression de VSoil:
+    check_contents_file(path_progression_vsoil, "Progression status", "100")
+```
+***\hypertarget{target1.2}{{1.2.ESPAS}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+check_dir(path_dir_espas)
+```
+***\hypertarget{target1.2.1}{{1.2.1.ESPAS Entrées:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    check_file(path_calibration_espas)
+    check_file(path_mass_espas)
+    check_file(path_ter_espas)
+```
+
+***\hypertarget{target1.2.2}{{1.2.2.ESPAS Sorties:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    check_file(path_matrix_potential_espas)
+    check_file(path_observ_value_espas)
+    check_file(path_return_status_espas)
+    #Verification du return_status d'ESPAS:
+    check_contents_file(path_return_status_espas, "Return status", "0")
+```
+
+
+
+
+
+
+\newpage
+**\hypertarget{target2}{{2. Vérification des données d'entrées}}** \
+***\hypertarget{target2.1}{{2.1.Validation du .ter:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    #compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
+```
+
+***\hypertarget{target2.2}{{2.2.Validation des données de calibration:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")
+```
+
+***\hypertarget{target2.3}{{2.3.Masse et diamètre:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    compare_files_lines(path_mass_vsoil, path_mass_espas, 0.001)
+```
+
+
+
+
+
+\newpage
+**\hypertarget{target3}{{3. Vérification des données de sorties}}** \
+***\hypertarget{target3.1}{{3.1.Potentiels matriciels:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")
+```
+
+***\hypertarget{target3.2}{{3.2.Valeurs observées:}}*** \
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
+```
+

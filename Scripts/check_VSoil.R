@@ -7,9 +7,6 @@ library(diffobj)
 ########################################### INITIALISATION #############################################
 ########################################################################################################
 
-#Stoper le script quand une erreur est detecte:
-stop_script <- FALSE
-
 #Recuperer les aguments:
 args <- commandArgs(trailingOnly = TRUE)
 
