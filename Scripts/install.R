@@ -11,3 +11,4 @@ tinytex::install_tinytex()  # install TinyTeX for generate PDF
 install.packages("gridExtra")
 install.packages("tidyverse")
 devtools::install_github("r-lib/crayon")
+devtools::install_github("hadley/emo")
