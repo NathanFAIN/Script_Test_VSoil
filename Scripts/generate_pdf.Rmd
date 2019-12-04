@@ -256,6 +256,12 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
 
 \newpage
 
+```{r, echo = FALSE,}
+########################################################################################################
+############################################ DEBUT DU PDF ##############################################
+########################################################################################################
+```
+
 # **Sommaire**
 
 **\hyperlink{target1}{{1. Vérification des deux répertoires}}** \
@@ -280,9 +286,14 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
 
 
 
+
+
 \newpage
 **\hypertarget{target1}{{1. Vérification des deux répertoires}}** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+########################################################################################################
+################################# VERIFICATION DES DEUX REPERTOIRES ####################################
+########################################################################################################
 check_args_number(args)
 ```
 
@@ -336,6 +347,11 @@ check_dir(path_dir_espas)
 
 \newpage
 **\hypertarget{target2}{{2. Vérification des données d'entrées}}** \
+```{r, echo = FALSE}
+########################################################################################################
+################################## VERIFICATION DES DONNEES D ENTRE ####################################
+########################################################################################################
+```
 ***\hypertarget{target2.1}{{2.1.Validation du .ter:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     #compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
@@ -367,6 +383,11 @@ check_dir(path_dir_espas)
 
 \newpage
 **\hypertarget{target3}{{3. Vérification des données de sorties}}** \
+```{r, echo = FALSE}
+########################################################################################################
+################################ VERIFICATION DES DONNEES DE SORTIE ####################################
+########################################################################################################
+```
 ***\hypertarget{target3.1}{{3.1.Potentiels matriciels:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     #compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")
@@ -396,4 +417,3 @@ check_dir(path_dir_espas)
             geom_line(aes(y = My_d2), color = "green")
     }
 ```
-
