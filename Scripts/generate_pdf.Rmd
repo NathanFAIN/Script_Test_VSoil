@@ -49,12 +49,15 @@ path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_sta
 path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
 path_matrix_potential_vsoil <- paste(path_dir_vsoil, "/matrix_potential.csv", sep = "")
 path_observ_value_vsoil <- paste(path_dir_vsoil, "/observ_value.csv", sep = "")
+path_ter_vsoil <<- ""
+path_calibration_vsoil <<- ""
+path_mass_vsoil <<- ""
 
 #Path pour ESPAS:
 path_dir_espas <- toString(args[2])
 path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", sep = "")
 path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
-path_ter_espas <- paste(path_dir_espas, "/Example/Wind_sdec/Wind_sdec.dat", sep = "")
+path_ter_espas <- paste(path_dir_espas, "/lib/path_ter.dat", sep = "")
 path_matrix_potential_espas <- paste(path_dir_espas, "/lib/espas_potential.csv", sep = "")
 path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", sep = "")
 path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
@@ -120,9 +123,6 @@ get_path_from_xml <- function(path)
             path_mass_vsoil <<- xmlAttrs(node_mass_settings[[1]])[["originalValue"]]
         } else {
             script_error <<- TRUE
-            path_ter_vsoil <<- ""
-            path_calibration_vsoil <<- ""
-            path_mass_vsoil <<- ""
             cat('\\textcolor{red}{Chemin invalide: }', path, " \\\n", sep="")
         }
     }
@@ -256,11 +256,27 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
     }
 }
 
+#Fonction pour afficher deux path:
 display_path <- function(message, path_file1, path_file2)
 {
     cat("\\textcolor{darkgray}{", message, " de VSoil: }", path_file1, " \\\n", sep="")
     cat("\\textcolor{darkgray}{", message, " d'ESPAS: }", path_file2, " \\\n", sep="")
 }
+
+#Fonction pour afficher valeur erronée :
+display_error_data <- function(path_file1, path_file2, sep, colone, colone_time, time_div)
+{
+        data_1 <- read.delim(path_file1, header = TRUE, sep = sep)
+        data_2 <- read.delim(path_file2, header = TRUE, sep = sep)
+        data_2$My_time <- unlist(data_2[colone_time]) / time_div
+        data_2$My_d1 <- unlist(data_1[colone])
+        data_2$My_d2 <- unlist(data_2[colone])
+        ggplot(data_2, aes(x=My_time)) +
+            geom_line(aes(y = My_d1), color = "red") +
+            geom_line(aes(y = My_d2), color = "green") + 
+            labs(x = "Temps (h)", y = "Valeur erronée")
+}
+
 ```
 
 \newpage
@@ -339,6 +355,11 @@ check_dir(path_dir_espas)
     check_file(path_calibration_espas)
     check_file(path_mass_espas)
     check_file(path_ter_espas)
+    if (script_error == FALSE) {
+        path_ter_espas <- unlist(readLines(path_ter_espas))
+    }
+    path_ter_espas <- "/home/nfain/Bureau/wind_sdec.ter"
+    check_file(path_ter_espas)
 ```
 ***\hypertarget{target1.2.2}{{1.2.2.ESPAS Sorties:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
@@ -364,7 +385,9 @@ check_dir(path_dir_espas)
 ***\hypertarget{target2.1}{{2.1.Validation du .ter:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données du .ter", path_ter_vsoil, path_ter_espas)
-    #compare_files(path_ter_vsoil, path_ter_espas, 100, "\t")
+    if (!compare_files(path_ter_vsoil, path_ter_espas, 0.001, "\t")) {
+        display_error_data(path_ter_vsoil, path_ter_espas, "\t", error_colone, 5, 60)
+    }
 ```
 
 ***\hypertarget{target2.2}{{2.2.Validation des données de calibration:}}*** \
@@ -372,15 +395,7 @@ check_dir(path_dir_espas)
     display_path("Chemin des données de calibration", path_calibration_vsoil, path_calibration_espas)
     #compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")
     if (!compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")) {
-        data_1 <- read.delim(path_calibration_vsoil, header = TRUE, sep = "\t")
-        data_2 <- read.delim(path_calibration_espas, header = TRUE, sep = "\t")
-        data_2$My_time <- unlist(data_2[1]) / 3600
-        data_2$My_d1 <- unlist(data_1[error_colone])
-        data_2$My_d2 <- unlist(data_2[error_colone])
-        ggplot(data_2, aes(x=My_time)) +
-            geom_line(aes(y = My_d1), color = "green") + 
-            geom_line(aes(y = My_d2), color = "red") +
-            labs(x = "Temps (h)", y = "Valeur erronée")
+        display_error_data(path_calibration_vsoil, path_calibration_espas, "\t", error_colone, 1, 3600)
     }
 ```
 
@@ -406,15 +421,7 @@ check_dir(path_dir_espas)
     display_path("Chemin des données des potentiels matriciels", path_matrix_potential_vsoil, path_matrix_potential_espas)
     #compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")
     if (!compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")) {
-        data_1 <- read.delim(path_matrix_potential_vsoil, header = TRUE, sep = ";")
-        data_2 <- read.delim(path_matrix_potential_espas, header = TRUE, sep = ";")
-        data_2$My_time <- unlist(data_2[1]) / 3600
-        data_2$My_d1 <- unlist(data_1[error_colone])
-        data_2$My_d2 <- unlist(data_2[error_colone])
-        ggplot(data_2, aes(x=My_time)) +
-            geom_line(aes(y = My_d1), color = "red") + 
-            geom_line(aes(y = My_d2), color = "green") +
-            labs(x = "Temps (h)", y = "Valeur erronée")
+        display_error_data(path_matrix_potential_vsoil, path_matrix_potential_espas, ";", error_colone, 1, 3600)
     }
 ```
 
@@ -423,14 +430,6 @@ check_dir(path_dir_espas)
     display_path("Chemin des données des valeurs observées", path_observ_value_vsoil, path_observ_value_espas)
     #compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
     if (!compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")) {
-        data_1 <- read.delim(path_observ_value_vsoil, header = TRUE, sep = ";")
-        data_2 <- read.delim(path_observ_value_espas, header = TRUE, sep = ";")
-        data_2$My_time <- unlist(data_2[1]) / 3600
-        data_2$My_d1 <- unlist(data_1[2])
-        data_2$My_d2 <- unlist(data_2[2])
-        ggplot(data_2, aes(x=My_time)) +
-            geom_line(aes(y = My_d1), color = "red") + 
-            geom_line(aes(y = My_d2), color = "green") +
-            labs(x = "Temps (h)", y = "Valeur erronée")
+        display_error_data(path_observ_value_vsoil, path_observ_value_espas, ";", 2, 1, 3600)
     }
 ```
