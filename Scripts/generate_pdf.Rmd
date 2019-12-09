@@ -243,13 +243,13 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
             cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
         }
     #   Vérification des valeurs dans les deux fichiers:
-        check_epsilon(data1[11], data2[11], epsilon, path_file1, path_file2) #Diametre interieur du cylindre
-        check_epsilon(data1[14], data2[14], epsilon, path_file1, path_file2) #Hauteur du cylindre
-        check_epsilon(data1[17], data2[17], epsilon, path_file1, path_file2) #Masse de la tare utilisée
-        check_epsilon(data1[20], data2[20], epsilon, path_file1, path_file2) #Masse totale de l'echantillon humide
-        check_epsilon(data1[23], data2[23], epsilon, path_file1, path_file2) #Masse nette de sol sec a 105 degre
-        check_epsilon(data1[26], data2[26], epsilon, path_file1, path_file2) #Masse de la premiere sequence
-        check_epsilon(data1[29], data2[29], epsilon, path_file1, path_file2) #Hauteur totale du systeme experimental
+        check_epsilon(data1[11], data2[11], epsilon, path_file1, path_file2) #Vérification du diametre interieur du cylindre
+        check_epsilon(data1[14], data2[14], epsilon, path_file1, path_file2) #Vérification de la hauteur du cylindre
+        check_epsilon(data1[17], data2[17], epsilon, path_file1, path_file2) #Vérification de la masse de la tare utilisée
+        check_epsilon(data1[20], data2[20], epsilon, path_file1, path_file2) #Vérification de la masse totale de l'echantillon humide
+        check_epsilon(data1[23], data2[23], epsilon, path_file1, path_file2) #Vérification de la masse nette de sol sec a 105 degre
+        check_epsilon(data1[26], data2[26], epsilon, path_file1, path_file2) #Vérification de la masse de la premiere sequence
+        check_epsilon(data1[29], data2[29], epsilon, path_file1, path_file2) #Vérification de la hauteur totale du systeme experimental
         if (script_error == FALSE) {
             cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
         }
