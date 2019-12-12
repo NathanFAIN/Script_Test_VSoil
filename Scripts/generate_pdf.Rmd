@@ -56,7 +56,7 @@ set_epsilon <- function(args)
 clean_str <- function(str, c = " ")
 {
     if (nchar(str) > 1 && substr(str, start = nchar(str), stop = nchar(str)) == c) {
-        return (clean_arg(substr(str, start = 1, stop = nchar(str) - 1), c))
+        return (clean_str(substr(str, start = 1, stop = nchar(str) - 1), c))
     } else {
         return (str)
     }
@@ -80,12 +80,14 @@ check_file <- function(path_file)
     if (script_error == FALSE) {
         if(!file.exists(path_file) || dir.exists(path_file)) {
             script_error <<- TRUE
-            cat('\\textcolor{red}{Chemin invalide: }')
+            cat("\\textcolor{red}{Chemin invalide: }")
         } else {
-            cat('\\textcolor{green}{Chemin valide: }')
+            cat("\\textcolor{green}{Chemin valide: }")
         }
-        cat(path_file, " \\\n", sep="")
+    } else {
+        cat("\\textcolor{red}{Chemin non vérifié: }")
     }
+    cat(path_file, " \\\n", sep="")
 }
 
 #Fonction pour verifier l'existance d'un dossier:
@@ -98,8 +100,10 @@ check_dir <- function(path_dir)
         } else {
             cat('\\textcolor{green}{Chemin valide: }')
         }
-        cat(path_dir, " \\\n", sep="")
+    } else {
+        cat("\\textcolor{red}{Chemin non vérifié: }")
     }
+    cat(path_dir, " \\\n", sep="")
 }
 
 #Fonction pour obtenir les path grace a l'xml:
@@ -119,6 +123,8 @@ get_path_from_xml <- function(path)
             script_error <<- TRUE
             cat('\\textcolor{red}{Chemin invalide: }', path, " \\\n", sep="")
         }
+    } else {
+        cat('\\textcolor{red}{Chemin non vérifié: }', path, " \\\n", sep="")
     }
 }
 
@@ -133,6 +139,8 @@ check_contents_file <- function(path_file, value_name, contents)
         } else {
             cat('\\textcolor{green}{', value_name, ' valide: }', path_file, " -> ", contents_test[1], " \\\n", sep="")
         }
+    } else {
+        cat('\\textcolor{red}{Contenu non vérifié: }', path_file, " \\\n", sep="")
     }
 }
 
@@ -162,7 +170,7 @@ compare_data <- function(data1, data2, epsilon, path_file1, path_file2)
             index <- which.max(cmp_data)
             error_line <<- (index - 1) %% length(unlist(data1[1])) + 1
             error_colone <<- ceiling(index / length(unlist(data1[1])))
-            cat("\\textcolor{red}{Valeur: ", unlist(data1[error_colone])[error_line], " est invalide, LIGNE: ", error_line, ", COLONE: ",error_colone, "} \\\n", sep="")
+            cat("\\textcolor{red}{La valeur: ", unlist(data1[error_colone])[error_line], " est différente de la valeur ", unlist(data2[error_colone])[error_line], ". Ligne: ", error_line, ", colone: ",error_colone, "} \\\n", sep="")
         }
     }
 }
@@ -183,6 +191,8 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
         } else {
             return (FALSE)
         }
+    } else {
+        cat("\\textcolor{red}{Valeurs non vérifé.} \\\n", sep="")
     }
     return (TRUE)
 }
@@ -206,9 +216,12 @@ compare_files_bis <- function(path_file1, path_file2, epsilon, sep)
         } else {
             return (FALSE)
         }
+    } else {
+        cat("\\textcolor{red}{Valeurs non vérifé.} \\\n", sep="")
     }
     return (TRUE)
 }
+
 
 #Fonction pour comparer deux nombres:
 check_epsilon <- function(value1, value2, epsilon, path_file1, path_file2)
@@ -238,12 +251,18 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
             cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes:} ", length(data2), " \\\n", sep="")
         }
     #   Vérification des valeurs dans les deux fichiers:
-        foreach(i = c(11, 14, 17, 20, 23, 26, 29)) %do% {
-            check_epsilon(data1[i], data2[i], epsilon, path_file1, path_file2)
-        }
+        check_epsilon(data1[11], data2[11], epsilon, path_file1, path_file2) #Vérification du diametre interieur du cylindre
+        check_epsilon(data1[14], data2[14], epsilon, path_file1, path_file2) #Vérification de la hauteur du cylindre
+        check_epsilon(data1[17], data2[17], epsilon, path_file1, path_file2) #Vérification de la masse de la tare utilisée
+        check_epsilon(data1[20], data2[20], epsilon, path_file1, path_file2) #Vérification de la masse totale de l'echantillon humide
+        check_epsilon(data1[23], data2[23], epsilon, path_file1, path_file2) #Vérification de la masse nette de sol sec a 105 degre
+        check_epsilon(data1[26], data2[26], epsilon, path_file1, path_file2) #Vérification de la masse de la premiere sequence
+        check_epsilon(data1[29], data2[29], epsilon, path_file1, path_file2) #Vérification de la hauteur totale du systeme experimental
         if (script_error == FALSE) {
             cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques, epsilon:} ", epsilon, " \\\n", sep="")
         }
+    } else {
+        cat("\\textcolor{red}{Valeurs non vérifé.} \\\n", sep="")
     }
 }
 

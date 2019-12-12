@@ -19,5 +19,5 @@ fi
 
 #Lancement du script
 echo -e "\e[32mGénération du PDF...\e[0m\n\n"
-sudo $SCRIPT -e $CMD $1 $2 $3
+$SCRIPT -e $CMD $1 $2 $3
 mv -f $DIR"/"$NAME .
