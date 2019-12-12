@@ -35,6 +35,22 @@ header-includes:
 ########################################## FONCTIONS UTILES ############################################
 ########################################################################################################
 
+#Fonction pour set le epsilon:
+set_epsilon <- function(args)
+{
+    if (!is.na(args[3])) {
+        if (is.na(as.numeric(args[3])) || as.numeric(args[3]) < 0) {
+            script_error <<- TRUE
+            cat("\\textcolor{red}{Epsilon invalide!} \\\n")
+        } else {
+            epsilon <<- as.numeric(args[3])
+        }
+    }
+    if (script_error == FALSE) {
+        cat("\\textcolor{cyan}{Epsilon: }", epsilon, " \\\n", sep="")
+    }
+}
+
 #Fonction pour retier le char c devant la chaine str:
 clean_str <- function(str, c = " ")
 {
@@ -48,7 +64,7 @@ clean_str <- function(str, c = " ")
 #Fonction pour verifier le nombre d'args:
 check_args_number <- function(args)
 {
-    if (is.na(args[1]) || is.na(args[2]) || !is.na(args[3])) {
+    if (is.na(args[1]) || is.na(args[2]) || !is.na(args[4])) {
         script_error <<- TRUE
         cat("\\textcolor{red}{Nombre d'aguments invalide!} \\\n")
     } else {
@@ -129,6 +145,8 @@ compare_line <- function(data1, data2, path_file1, path_file2)
         } else if (length(unlist(data1)) != length(unlist(data2))) {
             script_error <<- TRUE
             cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de lignes: } \\\n", path_file1, "->", length(unlist(data1)), " \\\n", path_file2, "->", length(unlist(data2))," \\\n", sep="")
+        } else {
+            nbr_line <<- ceiling(length(unlist(data2)) / length(data2))
         }
     }
 }
@@ -156,11 +174,11 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
         data2 <- read.delim(path_file2, header = TRUE, sep = sep)
         compare_line(data1, data2, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes:} ", nbr_line, " \\\n", sep="")
         }
         compare_data(data1, data2, epsilon, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques, epsilon:} ", epsilon, " \\\n", sep="")
         } else {
             return (FALSE)
         }
@@ -176,14 +194,14 @@ compare_files_bis <- function(path_file1, path_file2, epsilon, sep)
         data2 <- read.delim(path_file2, header = TRUE, sep = sep)
         compare_line(data1, data2, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes:} ", nbr_line, " \\\n", sep="")
         } else {
             return (FALSE)
         }
         compare_data(data1[1], data2[1], 0.2, path_file1, path_file2)
         compare_data(data1[2], data2[2], epsilon, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques, epsilon:} ", epsilon, " \\\n", sep="")
         } else {
             return (FALSE)
         }
@@ -217,7 +235,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
             script_error <<- TRUE
             cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de lignes: } \\\n", path_file1, "->", lines_data1, " \\\n", path_file2, "->", lines_data2," \\\n", sep="")
         } else {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes:} ", length(data2), " \\\n", sep="")
         }
     #   Vérification des valeurs dans les deux fichiers:
         check_epsilon(data1[11], data2[11], epsilon, path_file1, path_file2) #Vérification du diametre interieur du cylindre
@@ -228,7 +246,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
         check_epsilon(data1[26], data2[26], epsilon, path_file1, path_file2) #Vérification de la masse de la premiere sequence
         check_epsilon(data1[29], data2[29], epsilon, path_file1, path_file2) #Vérification de la hauteur totale du systeme experimental
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques, epsilon:} ", epsilon, " \\\n", sep="")
         }
     }
 }
@@ -263,7 +281,9 @@ display_error_data <- function(path_file1, path_file2, sep, colone, colone_time,
 
 script_error <<- FALSE
 error_line <<- 1
+nbr_line <<- 1
 error_colone <<- 1
+epsilon <- 0.001
 
 #Recuperer les aguments:
 args <- commandArgs(trailingOnly = TRUE)
@@ -331,6 +351,7 @@ path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep 
 ################################# VERIFICATION DES DEUX REPERTOIRES ####################################
 ########################################################################################################
 check_args_number(args)
+set_epsilon(args)
 ```
 
 ***\hypertarget{target1.1}{{1.1.VSoil}}*** \
@@ -396,7 +417,7 @@ check_dir(path_dir_espas)
 ***\hypertarget{target2.1}{{2.1.Validation du fichier de données:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données du fichier de données", path_ter_vsoil, path_ter_espas)
-    if (!compare_files(path_ter_vsoil, path_ter_espas, 0.001, "\t")) {
+    if (!compare_files(path_ter_vsoil, path_ter_espas, epsilon, "\t")) {
         display_error_data(path_ter_vsoil, path_ter_espas, "\t", error_colone, 5, 60)
     }
 ```
@@ -404,8 +425,8 @@ check_dir(path_dir_espas)
 ***\hypertarget{target2.2}{{2.2.Validation des données de calibration:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données de calibration", path_calibration_vsoil, path_calibration_espas)
-    #compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")
-    if (!compare_files(path_calibration_vsoil, path_calibration_espas, 0.001, "\t")) {
+    #compare_files(path_calibration_vsoil, path_calibration_espas, epsilon, "\t")
+    if (!compare_files(path_calibration_vsoil, path_calibration_espas, epsilon, "\t")) {
         display_error_data(path_calibration_vsoil, path_calibration_espas, "\t", error_colone, 1, 3600)
     }
 ```
@@ -413,7 +434,7 @@ check_dir(path_dir_espas)
 ***\hypertarget{target2.3}{{2.3.Masse et diamètre:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données de masses et de diamètres", path_mass_vsoil, path_mass_espas)
-    compare_files_lines(path_mass_vsoil, path_mass_espas, 0.001)
+    compare_files_lines(path_mass_vsoil, path_mass_espas, epsilon)
 ```
 
 
@@ -430,8 +451,8 @@ check_dir(path_dir_espas)
 ***\hypertarget{target3.1}{{3.1.Potentiels matriciels:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données des potentiels matriciels", path_matrix_potential_vsoil, path_matrix_potential_espas)
-    #compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")
-    if (!compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, 0.001, ";")) {
+    #compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, epsilon, ";")
+    if (!compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, epsilon, ";")) {
         display_error_data(path_matrix_potential_vsoil, path_matrix_potential_espas, ";", error_colone, 1, 3600)
     }
 ```
@@ -439,8 +460,8 @@ check_dir(path_dir_espas)
 ***\hypertarget{target3.2}{{3.2.Valeurs observées:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données des valeurs observées", path_observ_value_vsoil, path_observ_value_espas)
-    #compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
-    if (!compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")) {
+    #compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, epsilon, ";")
+    if (!compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, epsilon, ";")) {
         display_error_data(path_observ_value_vsoil, path_observ_value_espas, ";", 2, 1, 3600)
     }
 ```
