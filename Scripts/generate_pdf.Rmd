@@ -35,6 +35,15 @@ header-includes:
 ########################################### INITIALISATION #############################################
 ########################################################################################################
 
+clean_arg <- function(my_arg, c=" ")
+{
+    if (nchar(my_arg) > 1 && substr(my_arg, start = nchar(my_arg), stop = nchar(my_arg)) == c) {
+        return (clean_arg(substr(my_arg, start = 1, stop = nchar(my_arg) - 1), c))
+    } else {
+        return (my_arg)
+    }
+}
+
 script_error <<- FALSE
 error_line <<- 1
 error_colone <<- 1
@@ -43,7 +52,7 @@ error_colone <<- 1
 args <- commandArgs(trailingOnly = TRUE)
 
 #Path pour VSoil:
-path_dir_vsoil <- toString(args[1])
+path_dir_vsoil <- clean_arg(toString(args[1]), "/")
 path_file_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_model_init_data.xml", sep = "")
 path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_status.txt", sep = "")
 path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
@@ -54,7 +63,7 @@ path_calibration_vsoil <<- ""
 path_mass_vsoil <<- ""
 
 #Path pour ESPAS:
-path_dir_espas <- toString(args[2])
+path_dir_espas <- clean_arg(toString(args[2]), "/")
 path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", sep = "")
 path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
 path_ter_espas <- paste(path_dir_espas, "/lib/path_ter.dat", sep = "")
@@ -179,11 +188,11 @@ compare_files <- function(path_file1, path_file2, epsilon, sep)
         data2 <- read.delim(path_file2, header = TRUE, sep = sep)
         compare_line(data1, data2, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
         }
         compare_data(data1, data2, epsilon, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
         } else {
             return (FALSE)
         }
@@ -199,14 +208,14 @@ compare_files_bis <- function(path_file1, path_file2, epsilon, sep)
         data2 <- read.delim(path_file2, header = TRUE, sep = sep)
         compare_line(data1, data2, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
         } else {
             return (FALSE)
         }
         compare_data(data1[1], data2[1], 0.2, path_file1, path_file2)
         compare_data(data1[2], data2[2], epsilon, path_file1, path_file2)
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
         } else {
             return (FALSE)
         }
@@ -240,7 +249,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
             script_error <<- TRUE
             cat("\\textcolor{red}{Les deux fichiers n'ont pas le même nombre de lignes: } \\\n", path_file1, "->", lines_data1, " \\\n", path_file2, "->", lines_data2," \\\n", sep="")
         } else {
-            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont le même nombre de lignes.} \\\n", sep="")
         }
     #   Vérification des valeurs dans les deux fichiers:
         check_epsilon(data1[11], data2[11], epsilon, path_file1, path_file2) #Vérification du diametre interieur du cylindre
@@ -251,7 +260,7 @@ compare_files_lines <- function(path_file1, path_file2, epsilon)
         check_epsilon(data1[26], data2[26], epsilon, path_file1, path_file2) #Vérification de la masse de la premiere sequence
         check_epsilon(data1[29], data2[29], epsilon, path_file1, path_file2) #Vérification de la hauteur totale du systeme experimental
         if (script_error == FALSE) {
-            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques: } (", path_file1, " & ", path_file2, ") \\\n", sep="")
+            cat("\\textcolor{green}{Les deux fichiers ont des valeurs identiques.} \\\n", sep="")
         }
     }
 }
@@ -299,7 +308,7 @@ display_error_data <- function(path_file1, path_file2, sep, colone, colone_time,
 
 
 **2.\hyperlink{target2}{{Vérification des données d'entrées}}** \
-\   \ \hyperlink{target2.1}{{2.1.Validation du .ter}} \
+\   \ \hyperlink{target2.1}{{2.1.Validation du fichier de données}} \
 \   \ \hyperlink{target2.2}{{2.2.Validation des données de calibration}} \
 \   \ \hyperlink{target2.3}{{2.3.Masse et diamètre}} \
 
@@ -309,6 +318,7 @@ display_error_data <- function(path_file1, path_file2, sep, colone, colone_time,
 \   \ \hyperlink{target3.2}{{3.2.Valeurs observées}} \
 
 
+**4. \hyperlink{target4}{{Conclusion}}** \
 
 
 
@@ -358,7 +368,7 @@ check_dir(path_dir_espas)
     if (script_error == FALSE) {
         path_ter_espas <- unlist(readLines(path_ter_espas))
     }
-    path_ter_espas <- "/home/nfain/Bureau/wind_sdec.ter"
+    #path_ter_espas <- "/home/nfain/Bureau/wind_sdec.ter"
     check_file(path_ter_espas)
 ```
 ***\hypertarget{target1.2.2}{{1.2.2.ESPAS Sorties:}}*** \
@@ -382,9 +392,9 @@ check_dir(path_dir_espas)
 ################################## VERIFICATION DES DONNEES D ENTRE ####################################
 ########################################################################################################
 ```
-***\hypertarget{target2.1}{{2.1.Validation du .ter:}}*** \
+***\hypertarget{target2.1}{{2.1.Validation du fichier de données:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
-    display_path("Chemin des données du .ter", path_ter_vsoil, path_ter_espas)
+    display_path("Chemin des données du fichier de données", path_ter_vsoil, path_ter_espas)
     if (!compare_files(path_ter_vsoil, path_ter_espas, 0.001, "\t")) {
         display_error_data(path_ter_vsoil, path_ter_espas, "\t", error_colone, 5, 60)
     }
@@ -431,5 +441,20 @@ check_dir(path_dir_espas)
     #compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")
     if (!compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, 0.001, ";")) {
         display_error_data(path_observ_value_vsoil, path_observ_value_espas, ";", 2, 1, 3600)
+    }
+```
+\newpage
+**\hypertarget{target4}{{4. Conclusion}}** \
+```{r, echo = FALSE}
+########################################################################################################
+############################################ CONCLUSION ################################################
+########################################################################################################
+```
+
+```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
+    if (script_error == FALSE) {
+        cat("Les données de VSoil sont coherente avec celle d'ESPAS.")
+    } else {
+        cat("Les données de VSoil ne sont pas coherente avec celle d'ESPAS.")
     }
 ```
