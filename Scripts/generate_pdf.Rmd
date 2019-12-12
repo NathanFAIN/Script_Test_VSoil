@@ -1,6 +1,6 @@
 ---
-title: | 
-  | **Validation des valeurs de VSoil**
+title:  | 
+        | **Validation des valeurs de VSoil**
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 author: "`r Sys.info()[['user']]`"
 output:
@@ -271,7 +271,6 @@ display_error_data <- function(path_file1, path_file2, sep, colone, colone_time,
             geom_line(aes(y = My_d2), color = "green") + 
             labs(x = "Temps (h)", y = "Valeur erronée")
 }
-
 ```
 
 ```{r, echo=FALSE}
@@ -309,8 +308,10 @@ path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", 
 path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
 ```
 
-\newpage
 
+
+
+\newpage
 ```{r, echo = FALSE,}
 ########################################################################################################
 ############################################ DEBUT DU PDF ##############################################
@@ -350,13 +351,13 @@ path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep 
 ########################################################################################################
 ################################# VERIFICATION DES DEUX REPERTOIRES ####################################
 ########################################################################################################
-check_args_number(args)
-set_epsilon(args)
+    check_args_number(args)
+    set_epsilon(args)
 ```
 
 ***\hypertarget{target1.1}{{1.1.VSoil}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
-check_dir(path_dir_vsoil)
+    check_dir(path_dir_vsoil)
 ```
 ***\hypertarget{target1.1.1}{{1.1.1.VSoil Entrées:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
@@ -405,8 +406,6 @@ check_dir(path_dir_espas)
 
 
 
-
-
 \newpage
 **\hypertarget{target2}{{2. Vérification des données d'entrées}}** \
 ```{r, echo = FALSE}
@@ -425,7 +424,6 @@ check_dir(path_dir_espas)
 ***\hypertarget{target2.2}{{2.2.Validation des données de calibration:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données de calibration", path_calibration_vsoil, path_calibration_espas)
-    #compare_files(path_calibration_vsoil, path_calibration_espas, epsilon, "\t")
     if (!compare_files(path_calibration_vsoil, path_calibration_espas, epsilon, "\t")) {
         display_error_data(path_calibration_vsoil, path_calibration_espas, "\t", error_colone, 1, 3600)
     }
@@ -440,7 +438,6 @@ check_dir(path_dir_espas)
 
 
 
-
 \newpage
 **\hypertarget{target3}{{3. Vérification des données de sorties}}** \
 ```{r, echo = FALSE}
@@ -451,7 +448,6 @@ check_dir(path_dir_espas)
 ***\hypertarget{target3.1}{{3.1.Potentiels matriciels:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données des potentiels matriciels", path_matrix_potential_vsoil, path_matrix_potential_espas)
-    #compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, epsilon, ";")
     if (!compare_files(path_matrix_potential_vsoil, path_matrix_potential_espas, epsilon, ";")) {
         display_error_data(path_matrix_potential_vsoil, path_matrix_potential_espas, ";", error_colone, 1, 3600)
     }
@@ -460,11 +456,14 @@ check_dir(path_dir_espas)
 ***\hypertarget{target3.2}{{3.2.Valeurs observées:}}*** \
 ```{r, echo = FALSE, fig.width=9, fig.height=8, results="asis", linewidth=90}
     display_path("Chemin des données des valeurs observées", path_observ_value_vsoil, path_observ_value_espas)
-    #compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, epsilon, ";")
     if (!compare_files_bis(path_observ_value_vsoil, path_observ_value_espas, epsilon, ";")) {
         display_error_data(path_observ_value_vsoil, path_observ_value_espas, ";", 2, 1, 3600)
     }
 ```
+
+
+
+
 \newpage
 **\hypertarget{target4}{{4. Conclusion}}** \
 ```{r, echo = FALSE}
