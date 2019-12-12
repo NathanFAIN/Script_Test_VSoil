@@ -1,0 +1,28 @@
+REP VSOIL:
+- Pas de présence du fichier "run_info/vsoil_model_init_data.xml" -> OK
+- Pas de présence du fichier "calibration_*.dat" -> OK
+- Pas de présence du fichier "masse_*.dat" -> OK
+- Pas de présence du fichier "*.ter"
+- Pas de présence du fichier "matrix_potential.csv" -> OK
+- Pas de présence du fichier "observ_value.csv" -> OK
+- Pas de présence du fichier "run_info/vsoil_exit_status.txt" -> OK
+- Pas de présence du fichier "run_info/vsoil_progression.txt" -> OK
+- Pas écrit "0" dans le fichier "run_info/vsoil_exit_status.txt" -> OK
+- Pas écrit "100" dans le fichier "run_info/vsoil_progression.txt" -> OK
+
+REP ESPAS:
+- Pas de présence du fichier "lib/calibration_espas.dat" -> OK
+- Pas de présence du fichier "lib/masse_espas.dat" -> OK
+- Pas de présence du fichier "lib/path_ter.dat" écrit dans le fichier "lib/masse_espas.dat"  -> OK
+- Pas de présence du fichier "*.ter" -> OK
+- Pas de présence du fichier "lib/espas_potential.csv" -> OK
+- Pas de présence du fichier "lib/return_status.dat" -> OK
+- Pas de présence du fichier "lib/observ_value.csv" -> OK
+- Pas écrit "0" dans le fichier "lib/return_status.dat" -> OK
+
+DIFF:
+- Maivaises valeurs dans le .ter -> OK
+- Maivaises valeurs dans les données de calibration -> OK
+- Maivaises valeurs dans les données de masse et de diamètre -> OK
+- Maivaises valeurs dans les potentiels matriciels -> OK
+- Maivaises valeurs dans les valeurs observées -> OK
