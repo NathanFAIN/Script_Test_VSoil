@@ -17,6 +17,7 @@ header-includes:
 ########################################################################################################
 ############################################## LIBRARY #################################################
 ########################################################################################################
+
   library(gridExtra)
   library(tidyverse)
   library(knitr)
@@ -29,53 +30,20 @@ header-includes:
   knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r, echo=FALSE}
-########################################################################################################
-########################################### INITIALISATION #############################################
-########################################################################################################
-
-clean_arg <- function(my_arg, c=" ")
-{
-    if (nchar(my_arg) > 1 && substr(my_arg, start = nchar(my_arg), stop = nchar(my_arg)) == c) {
-        return (clean_arg(substr(my_arg, start = 1, stop = nchar(my_arg) - 1), c))
-    } else {
-        return (my_arg)
-    }
-}
-
-script_error <<- FALSE
-error_line <<- 1
-error_colone <<- 1
-
-#Recuperer les aguments:
-args <- commandArgs(trailingOnly = TRUE)
-
-#Path pour VSoil:
-path_dir_vsoil <- clean_arg(toString(args[1]), "/")
-path_file_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_model_init_data.xml", sep = "")
-path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_status.txt", sep = "")
-path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
-path_matrix_potential_vsoil <- paste(path_dir_vsoil, "/matrix_potential.csv", sep = "")
-path_observ_value_vsoil <- paste(path_dir_vsoil, "/observ_value.csv", sep = "")
-path_ter_vsoil <<- ""
-path_calibration_vsoil <<- ""
-path_mass_vsoil <<- ""
-
-#Path pour ESPAS:
-path_dir_espas <- clean_arg(toString(args[2]), "/")
-path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", sep = "")
-path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
-path_ter_espas <- paste(path_dir_espas, "/lib/path_ter.dat", sep = "")
-path_matrix_potential_espas <- paste(path_dir_espas, "/lib/espas_potential.csv", sep = "")
-path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", sep = "")
-path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
-```
-
 ```{r, echo=FALSE}
 ########################################################################################################
 ########################################## FONCTIONS UTILES ############################################
 ########################################################################################################
+
+#Fonction pour retier le char c devant la chaine str:
+clean_str <- function(str, c = " ")
+{
+    if (nchar(str) > 1 && substr(str, start = nchar(str), stop = nchar(str)) == c) {
+        return (clean_arg(substr(str, start = 1, stop = nchar(str) - 1), c))
+    } else {
+        return (str)
+    }
+}
 
 #Fonction pour verifier le nombre d'args:
 check_args_number <- function(args)
@@ -286,6 +254,39 @@ display_error_data <- function(path_file1, path_file2, sep, colone, colone_time,
             labs(x = "Temps (h)", y = "Valeur erronée")
 }
 
+```
+
+```{r, echo=FALSE}
+########################################################################################################
+########################################### INITIALISATION #############################################
+########################################################################################################
+
+script_error <<- FALSE
+error_line <<- 1
+error_colone <<- 1
+
+#Recuperer les aguments:
+args <- commandArgs(trailingOnly = TRUE)
+
+#Path pour VSoil:
+path_dir_vsoil <- clean_str(toString(args[1]), "/")
+path_file_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_model_init_data.xml", sep = "")
+path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_status.txt", sep = "")
+path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
+path_matrix_potential_vsoil <- paste(path_dir_vsoil, "/matrix_potential.csv", sep = "")
+path_observ_value_vsoil <- paste(path_dir_vsoil, "/observ_value.csv", sep = "")
+path_ter_vsoil <<- ""
+path_calibration_vsoil <<- ""
+path_mass_vsoil <<- ""
+
+#Path pour ESPAS:
+path_dir_espas <- clean_str(toString(args[2]), "/")
+path_calibration_espas <- paste(path_dir_espas, "/lib/calibration_espas.dat", sep = "")
+path_mass_espas <- paste(path_dir_espas, "/lib/masse_espas.dat", sep = "")
+path_ter_espas <- paste(path_dir_espas, "/lib/path_ter.dat", sep = "")
+path_matrix_potential_espas <- paste(path_dir_espas, "/lib/espas_potential.csv", sep = "")
+path_observ_value_espas <- paste(path_dir_espas, "/lib/observ_value_espas.csv", sep = "")
+path_return_status_espas <- paste(path_dir_espas, "/lib/return_status.dat", sep = "")
 ```
 
 \newpage
