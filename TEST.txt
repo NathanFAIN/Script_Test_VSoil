@@ -1,28 +1,28 @@
 REP VSOIL:
-- Pas de présence du fichier "run_info/vsoil_model_init_data.xml" -> OK
-- Pas de présence du fichier "calibration_*.dat" -> OK
-- Pas de présence du fichier "masse_*.dat" -> OK
-- Pas de présence du fichier "*.ter" -> OK
-- Pas de présence du fichier "matrix_potential.csv" -> OK
-- Pas de présence du fichier "observ_value.csv" -> OK
-- Pas de présence du fichier "run_info/vsoil_exit_status.txt" -> OK
-- Pas de présence du fichier "run_info/vsoil_progression.txt" -> OK
-- Pas écrit "0" dans le fichier "run_info/vsoil_exit_status.txt" -> OK
-- Pas écrit "100" dans le fichier "run_info/vsoil_progression.txt" -> OK
+1) Pas de présence du fichier "run_info/vsoil_model_init_data.xml" -> OK
+2) Pas de présence du fichier "calibration_*.dat" -> OK
+3) Pas de présence du fichier "masse_*.dat" -> OK
+4) Pas de présence du fichier "*.ter" -> OK
+5) Pas de présence du fichier "matrix_potential.csv" -> OK
+6) Pas de présence du fichier "observ_value.csv" -> OK
+7) Pas de présence du fichier "run_info/vsoil_exit_status.txt" -> OK
+8) Pas de présence du fichier "run_info/vsoil_progression.txt" -> OK
+9) Pas écrit "0" dans le fichier "run_info/vsoil_exit_status.txt" -> OK
+10) Pas écrit "100" dans le fichier "run_info/vsoil_progression.txt" -> OK
 
 REP ESPAS:
-- Pas de présence du fichier "lib/calibration_espas.dat" -> OK
-- Pas de présence du fichier "lib/masse_espas.dat" -> OK
-- Pas de présence du fichier "lib/path_ter.dat" écrit dans le fichier "lib/masse_espas.dat"  -> OK
-- Pas de présence du fichier "*.ter" -> OK
-- Pas de présence du fichier "lib/espas_potential.csv" -> OK
-- Pas de présence du fichier "lib/return_status.dat" -> OK
-- Pas de présence du fichier "lib/observ_value.csv" -> OK
-- Pas écrit "0" dans le fichier "lib/return_status.dat" -> OK
+11) Pas de présence du fichier "lib/calibration_espas.dat" -> OK
+12) Pas de présence du fichier "lib/masse_espas.dat" -> OK
+13) Pas de présence du fichier "lib/path_ter.dat" écrit dans le fichier "lib/masse_espas.dat"  -> OK
+14) Pas de présence du fichier "*.ter" -> OK
+15) Pas de présence du fichier "lib/espas_potential.csv" -> OK
+16) Pas de présence du fichier "lib/return_status.dat" -> OK
+17) Pas de présence du fichier "lib/observ_value.csv" -> OK
+18) Pas écrit "0" dans le fichier "lib/return_status.dat" -> OK
 
 DIFF:
-- Mauvaises valeurs dans le .ter -> OK
-- Mauvaises valeurs dans les données de calibration -> OK
-- Mauvaises valeurs dans les données de masse et de diamètre -> OK
-- Mauvaises valeurs dans les potentiels matriciels -> OK
-- Mauvaises valeurs dans les valeurs observées -> OK
+19) Mauvaises valeurs dans le .ter -> OK
+20) Mauvaises valeurs dans les données de calibration -> OK
+21) Mauvaises valeurs dans les données de masse et de diamètre -> OK
+22) Mauvaises valeurs dans les potentiels matriciels -> OK
+23) Mauvaises valeurs dans les valeurs observées -> OK

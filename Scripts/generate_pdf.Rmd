@@ -309,9 +309,9 @@ path_return_status_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_run_exit_sta
 path_progression_vsoil <- paste(path_dir_vsoil, "/run_infos/vsoil_progression.txt", sep = "")
 path_matrix_potential_vsoil <- paste(path_dir_vsoil, "/matrix_potential.csv", sep = "")
 path_observ_value_vsoil <- paste(path_dir_vsoil, "/observ_value.csv", sep = "")
-path_ter_vsoil <<- ""
-path_calibration_vsoil <<- ""
-path_mass_vsoil <<- ""
+path_ter_vsoil <<- "/"
+path_calibration_vsoil <<- "/"
+path_mass_vsoil <<- "/"
 
 #Path pour ESPAS:
 path_dir_espas <- clean_str(toString(args[2]), "/")
